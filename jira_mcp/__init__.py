@@ -1,0 +1,1 @@
+"""Jira MCP server package."""
