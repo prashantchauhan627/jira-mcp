@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 
-def adf_to_text(node: Any) -> str:
+def adf_to_text(node: Any) -> str:  # pylint: disable=too-many-return-statements
     """Recursively extract plain text from an ADF document or node."""
     if node is None:
         return ""

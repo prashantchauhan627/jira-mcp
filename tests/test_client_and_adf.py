@@ -1,8 +1,9 @@
-import os
+"""Tests for ADF conversion and Jira HTTP client."""
+# pylint: disable=missing-function-docstring
 
 import httpx
-import pytest
-import respx
+import pytest  # pylint: disable=unused-import
+import respx  # pylint: disable=unused-import
 
 from jira_mcp.adf import adf_to_text, text_to_adf
 from jira_mcp.client import JiraClient, JiraConfigError, JiraError
@@ -12,6 +13,7 @@ from jira_mcp.client import JiraClient, JiraConfigError, JiraError
 
 
 def test_adf_to_text_flattens_paragraphs():
+    """Test that ADF paragraphs are converted to newline-separated text."""
     doc = {
         "type": "doc",
         "version": 1,
@@ -24,6 +26,7 @@ def test_adf_to_text_flattens_paragraphs():
 
 
 def test_adf_to_text_handles_none_and_mentions():
+    """Test that None and mentions are handled correctly."""
     assert adf_to_text(None) == ""
     doc = {
         "type": "paragraph",
@@ -36,6 +39,7 @@ def test_adf_to_text_handles_none_and_mentions():
 
 
 def test_text_to_adf_round_trips():
+    """Test that text converts to ADF and back correctly."""
     adf = text_to_adf("hello\nworld")
     assert adf["type"] == "doc"
     assert len(adf["content"]) == 2
@@ -53,6 +57,7 @@ def env(monkeypatch):
 
 
 def test_missing_env_raises_config_error(monkeypatch):
+    """Test that missing environment variables raise JiraConfigError."""
     for k in ("JIRA_BASE_URL", "JIRA_EMAIL", "JIRA_API_TOKEN"):
         monkeypatch.delenv(k, raising=False)
     with pytest.raises(JiraConfigError):
@@ -60,7 +65,8 @@ def test_missing_env_raises_config_error(monkeypatch):
 
 
 @respx.mock
-def test_401_becomes_readable_error(env):
+def test_401_becomes_readable_error(env):  # pylint: disable=unused-argument,redefined-outer-name
+    """Test that 401 errors are converted to readable JiraError."""
     respx.get("https://example.atlassian.net/rest/api/3/issue/PROJ-1").mock(
         return_value=httpx.Response(401)
     )
@@ -70,7 +76,8 @@ def test_401_becomes_readable_error(env):
 
 
 @respx.mock
-def test_retries_on_429_then_succeeds(env, monkeypatch):
+def test_retries_on_429_then_succeeds(env, monkeypatch):  # pylint: disable=unused-argument,redefined-outer-name
+    """Test that 429 rate limit errors trigger retries."""
     monkeypatch.setattr("time.sleep", lambda _: None)  # no real waiting in tests
     route = respx.get("https://example.atlassian.net/rest/api/3/issue/PROJ-1")
     route.side_effect = [
@@ -83,7 +90,8 @@ def test_retries_on_429_then_succeeds(env, monkeypatch):
 
 
 @respx.mock
-def test_gives_up_after_max_attempts(env, monkeypatch):
+def test_gives_up_after_max_attempts(env, monkeypatch):  # pylint: disable=unused-argument,redefined-outer-name
+    """Test that retries are exhausted after max attempts."""
     monkeypatch.setattr("time.sleep", lambda _: None)
     route = respx.get("https://example.atlassian.net/rest/api/3/issue/PROJ-1").mock(
         return_value=httpx.Response(503)
@@ -95,7 +103,8 @@ def test_gives_up_after_max_attempts(env, monkeypatch):
 
 
 @respx.mock
-def test_jira_error_body_is_flattened(env):
+def test_jira_error_body_is_flattened(env):  # pylint: disable=unused-argument,redefined-outer-name
+    """Test that Jira error bodies are flattened into readable messages."""
     respx.post("https://example.atlassian.net/rest/api/3/search/jql").mock(
         return_value=httpx.Response(
             400,

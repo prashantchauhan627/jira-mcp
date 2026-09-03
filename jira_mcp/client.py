@@ -38,6 +38,7 @@ def _env(name: str) -> str:
 
 
 class JiraClient:
+    """HTTP client for Jira Cloud REST API v3 with retry/backoff and readable errors."""
     # Retry budget. Small on purpose — an agent looping on a failing call
     # is worse than a clear error it can reason about.
     MAX_ATTEMPTS = 3
@@ -128,10 +129,13 @@ class JiraClient:
     # -------------------------------------------------------------- helpers
 
     def get(self, path: str, **kwargs: Any) -> Any:
+        """Issue a GET request with retry/backoff."""
         return self.request("GET", path, **kwargs)
 
     def post(self, path: str, **kwargs: Any) -> Any:
+        """Issue a POST request with retry/backoff."""
         return self.request("POST", path, **kwargs)
 
     def close(self) -> None:
+        """Close the HTTP connection."""
         self._http.close()

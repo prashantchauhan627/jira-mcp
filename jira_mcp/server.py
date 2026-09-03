@@ -45,6 +45,7 @@ ALLOW_WRITES = os.environ.get("JIRA_ALLOW_WRITES", "").lower() in {"1", "true", 
 
 @lru_cache(maxsize=1)
 def client() -> JiraClient:
+    """Get or create the JiraClient singleton."""
     return JiraClient()
 
 
@@ -53,12 +54,14 @@ def client() -> JiraClient:
 
 
 class Comment(BaseModel):
+    """A comment on a Jira issue."""
     author: str
     created: str
     body: str
 
 
 class Issue(BaseModel):
+    """A complete Jira issue with description, comments, and metadata."""
     key: str
     summary: str
     status: str
@@ -73,6 +76,7 @@ class Issue(BaseModel):
 
 
 class IssueSummary(BaseModel):
+    """A compact representation of a Jira issue (no description or comments)."""
     key: str
     summary: str
     status: str
@@ -80,12 +84,14 @@ class IssueSummary(BaseModel):
 
 
 class SearchResult(BaseModel):
+    """Results from a JQL search."""
     issues: list[IssueSummary]
     total_returned: int
     truncated: bool = Field(description="True if more results exist beyond max_results.")
 
 
 class Transition(BaseModel):
+    """A workflow transition available for an issue."""
     id: str
     name: str
     to_status: str
@@ -286,6 +292,7 @@ def issue_resource(issue_key: str) -> str:
 
 
 def main() -> None:
+    """Start the MCP server."""
     mcp.run()
 
 
